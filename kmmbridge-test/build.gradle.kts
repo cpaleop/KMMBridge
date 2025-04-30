@@ -20,7 +20,6 @@ plugins {
     id("java-gradle-plugin")
     alias(libs.plugins.maven.publish)
     id("com.gradle.plugin-publish") version "1.0.0"
-    id("org.jlleitschuh.gradle.ktlint")
 }
 
 @Suppress("UnstableApiUsage")
