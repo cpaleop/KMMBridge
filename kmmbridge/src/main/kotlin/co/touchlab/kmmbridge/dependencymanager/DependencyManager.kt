@@ -28,7 +28,7 @@ interface DependencyManager {
         project: Project,
         version: String,
         uploadTask: TaskProvider<Task>,
-        publishRemoteTask: TaskProvider<Task>
+        publishRemoteTask: TaskProvider<Task>,
     ) {
     }
 

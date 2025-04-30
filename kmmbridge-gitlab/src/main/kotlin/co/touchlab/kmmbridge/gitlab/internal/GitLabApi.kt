@@ -14,8 +14,8 @@
 package co.touchlab.kmmbridge.gitlab.internal
 
 import co.touchlab.kmmbridge.findStringProperty
-import org.gradle.api.Project
 import java.net.URLEncoder
+import org.gradle.api.Project
 
 internal val Project.gitLabPublishTokenOrNull: String?
     get() = project.property("GITLAB_PUBLISH_TOKEN") as String?

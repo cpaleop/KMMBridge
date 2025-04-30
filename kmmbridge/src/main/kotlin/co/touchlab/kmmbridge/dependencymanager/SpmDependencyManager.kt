@@ -25,6 +25,11 @@ import co.touchlab.kmmbridge.internal.kotlin
 import co.touchlab.kmmbridge.internal.layoutBuildDir
 import co.touchlab.kmmbridge.internal.urlFile
 import co.touchlab.kmmbridge.internal.zipFilePath
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.nio.charset.Charset
+import java.util.Locale
+import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -37,11 +42,6 @@ import org.gradle.process.ExecOperations
 import org.gradle.process.internal.ExecException
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.nio.charset.Charset
-import java.util.*
-import javax.inject.Inject
 
 internal class SpmDependencyManager(
     /**
@@ -59,11 +59,12 @@ internal class SpmDependencyManager(
      */
     private fun Project.findRepoRoot(projectDir: File): String {
         val result = providers.of(GitRevParseValue::class.java) {}.get()
-        val repoRootFile = if (result == "") {
-            projectDir
-        } else {
-            File(result)
-        }
+        val repoRootFile =
+            if (result == "") {
+                projectDir
+            } else {
+                File(result)
+            }
         return repoRootFile.toString()
     }
 
@@ -77,12 +78,13 @@ internal class SpmDependencyManager(
         project: Project,
         version: String,
         uploadTask: TaskProvider<Task>,
-        publishRemoteTask: TaskProvider<Task>
+        publishRemoteTask: TaskProvider<Task>,
     ) {
         val extension = project.kmmBridgeExtension
         val projectDir = project.projectDir
-        val swiftToolVersion = SwiftToolVersion.of(_swiftToolVersion)
-            ?: throw IllegalArgumentException("Parameter swiftToolVersion should be not blank!")
+        val swiftToolVersion =
+            SwiftToolVersion.of(_swiftToolVersion)
+                ?: throw IllegalArgumentException("Parameter swiftToolVersion should be not blank!")
         val platforms = swiftTargetPlatforms(project)
 
         val swiftPackageFile = project.swiftPackageFile(project.rootDir)
@@ -91,42 +93,46 @@ internal class SpmDependencyManager(
             project.logger.error(buildPackageFileErrorMessage(packageName, perModuleVariablesBlock))
         }
 
-        val updatePackageSwiftTask = project.tasks.register("updatePackageSwift") {
-            group = TASK_GROUP_NAME
-            val zipFile = project.zipFilePath()
-            inputs.files(zipFile, project.urlFile)
-            outputs.files(swiftPackageFile)
+        val updatePackageSwiftTask =
+            project.tasks.register("updatePackageSwift") {
+                group = TASK_GROUP_NAME
+                val zipFile = project.zipFilePath()
+                inputs.files(zipFile, project.urlFile)
+                outputs.files(swiftPackageFile)
 
-            val urlFile = project.urlFile
+                val urlFile = project.urlFile
 
-            @Suppress("ObjectLiteralToLambda")
-            doLast(object : Action<Task> {
-                override fun execute(t: Task) {
-                    val checksum = providers.findSpmChecksum(zipFile, projectDir)
-                    val url = urlFile.readText()
-                    if (useCustomPackageFile && hasKmmbridgeVariablesSection(
-                            swiftPackageFile,
-                            packageName
-                        )
-                    ) {
-                        modifyPackageFileVariables(swiftPackageFile, packageName, url, checksum)
-                    } else if (useCustomPackageFile) {
-                        // We warned you earlier, but you didn't fix it, so now we interrupt the publish process because it's
-                        // probably not going to do what you want
-                        error(buildPackageFileErrorMessage(packageName, perModuleVariablesBlock))
-                    } else {
-                        writePackageFile(
-                            swiftPackageFile,
-                            extension.frameworkName.get(),
-                            url,
-                            checksum,
-                            swiftToolVersion,
-                            platforms
-                        )
-                    }
-                }
-            })
-        }
+                @Suppress("ObjectLiteralToLambda")
+                doLast(
+                    object : Action<Task> {
+                        override fun execute(t: Task) {
+                            val checksum = providers.findSpmChecksum(zipFile, projectDir)
+                            val url = urlFile.readText()
+                            if (useCustomPackageFile &&
+                                hasKmmbridgeVariablesSection(
+                                    swiftPackageFile,
+                                    packageName,
+                                )
+                            ) {
+                                modifyPackageFileVariables(swiftPackageFile, packageName, url, checksum)
+                            } else if (useCustomPackageFile) {
+                                // We warned you earlier, but you didn't fix it, so now we interrupt the publish process because it's
+                                // probably not going to do what you want
+                                error(buildPackageFileErrorMessage(packageName, perModuleVariablesBlock))
+                            } else {
+                                writePackageFile(
+                                    swiftPackageFile,
+                                    extension.frameworkName.get(),
+                                    url,
+                                    checksum,
+                                    swiftToolVersion,
+                                    platforms,
+                                )
+                            }
+                        }
+                    },
+                )
+            }
 
         updatePackageSwiftTask.configure { dependsOn(uploadTask) }
         publishRemoteTask.configure { dependsOn(updatePackageSwiftTask) }
@@ -137,20 +143,15 @@ internal class SpmDependencyManager(
         return swiftPackageFile.readText().contains(startTag)
     }
 
-    private fun modifyPackageFileVariables(
-        swiftPackageFile: File,
-        packageName: String,
-        url: String,
-        checksum: String,
-    ) {
+    private fun modifyPackageFileVariables(swiftPackageFile: File, packageName: String, url: String, checksum: String) {
         swiftPackageFile.writeText(
             getModifiedPackageFileText(
                 swiftPackageFile.readText(),
                 packageName,
                 perModuleVariablesBlock,
                 url,
-                checksum
-            )
+                checksum,
+            ),
         )
     }
 
@@ -160,9 +161,8 @@ internal class SpmDependencyManager(
         url: String,
         checksum: String,
         swiftToolVersion: SwiftToolVersion,
-        platforms: String
+        platforms: String,
     ) {
-
         val packageText =
             makePackageFileText(
                 packageName,
@@ -170,7 +170,7 @@ internal class SpmDependencyManager(
                 checksum,
                 perModuleVariablesBlock,
                 swiftToolVersion,
-                platforms
+                platforms,
             )
         swiftPackageFile.parentFile.mkdirs()
         swiftPackageFile.writeText(packageText)
@@ -184,14 +184,15 @@ internal class SpmDependencyManager(
             swiftPackageFile.writeText("")
         }
 
-        val checksumOut = exec {
-            commandLine(
-                "swift",
-                "package",
-                "compute-checksum",
-                zipFilePath.path
-            )
-        }.standardOutput.asText.get()
+        val checksumOut =
+            exec {
+                commandLine(
+                    "swift",
+                    "package",
+                    "compute-checksum",
+                    zipFilePath.path,
+                )
+            }.standardOutput.asText.get()
 
         if (!hadPackageSwift) {
             swiftPackageFile.delete()
@@ -201,12 +202,14 @@ internal class SpmDependencyManager(
     }
 
     override val needsGitTags: Boolean = true
+
     fun configureLocalDev(project: Project) {
         if (useCustomPackageFile) return // No local dev when using a custom package file
 
         val extension = project.kmmBridgeExtension
-        val swiftToolVersion = SwiftToolVersion.of(_swiftToolVersion)
-            ?: throw IllegalArgumentException("Parameter swiftToolVersion should be not blank!")
+        val swiftToolVersion =
+            SwiftToolVersion.of(_swiftToolVersion)
+                ?: throw IllegalArgumentException("Parameter swiftToolVersion should be not blank!")
         val platforms = swiftTargetPlatforms(project)
 
         project.tasks.register("spmDevBuild") {
@@ -219,35 +222,39 @@ internal class SpmDependencyManager(
             val layoutBuildDir = project.layoutBuildDir
 
             @Suppress("ObjectLiteralToLambda")
-            doLast(object : Action<Task> {
-                override fun execute(t: Task) {
-                    swiftPackageFile.writeText(
-                        makeLocalDevPackageFileText(
-                            swiftPackageFile,
-                            layoutBuildDir,
-                            extension.frameworkName.get(),
-                            swiftToolVersion,
-                            platforms
+            doLast(
+                object : Action<Task> {
+                    override fun execute(t: Task) {
+                        swiftPackageFile.writeText(
+                            makeLocalDevPackageFileText(
+                                swiftPackageFile,
+                                layoutBuildDir,
+                                extension.frameworkName.get(),
+                                swiftToolVersion,
+                                platforms,
+                            ),
                         )
-                    )
-                }
-            })
+                    }
+                },
+            )
         }
     }
 
     private fun swiftTargetPlatforms(project: Project): String {
-        val targetPlatforms = TargetPlatformDsl().apply(_targetPlatforms)
-            .targetPlatforms
-            .ifEmpty {
-                throw IllegalArgumentException("At least one target platform should be specified!")
-            }
+        val targetPlatforms =
+            TargetPlatformDsl()
+                .apply(_targetPlatforms)
+                .targetPlatforms
+                .ifEmpty {
+                    throw IllegalArgumentException("At least one target platform should be specified!")
+                }
 
         val platforms = platforms(project, targetPlatforms)
         return platforms
     }
 
-    private fun platforms(project: Project, targetPlatforms: List<TargetPlatform>): String =
-        targetPlatforms.flatMap { platform ->
+    private fun platforms(project: Project, targetPlatforms: List<TargetPlatform>): String = targetPlatforms
+        .flatMap { platform ->
             project.kotlin.targets
                 .withType<KotlinNativeTarget>()
                 .asSequence()
@@ -286,12 +293,10 @@ abstract class GitRevParseValue : ValueSource<String, ValueSourceParameters.None
     }
 }
 
-internal fun stripEndSlash(path: String): String {
-    return if (path.endsWith("/")) {
-        path.substring(0, path.length - 1)
-    } else {
-        path
-    }
+internal fun stripEndSlash(path: String): String = if (path.endsWith("/")) {
+    path.substring(0, path.length - 1)
+} else {
+    path
 }
 
 private fun makeLocalDevPackageFileText(
@@ -299,13 +304,14 @@ private fun makeLocalDevPackageFileText(
     layoutBuildDir: File,
     frameworkName: String,
     swiftToolVersion: SwiftToolVersion,
-    platforms: String
+    platforms: String,
 ): String {
     val swiftFolderPath = swiftPackageFile.parentFile.toPath()
     val projectBuildFolderPath = layoutBuildDir.toPath()
     val xcFrameworkPath =
         "${swiftFolderPath.relativize(projectBuildFolderPath)}/XCFrameworks/${NativeBuildType.DEBUG.getName()}"
-    val packageFileString = """
+    val packageFileString =
+        """
 // swift-tools-version:${swiftToolVersion.name}
 import PackageDescription
 
@@ -325,12 +331,12 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: packageName,
-            path: "./${xcFrameworkPath}/\(packageName).xcframework"
+            path: "./$xcFrameworkPath/\(packageName).xcframework"
         )
         ,
     ]
 )
-""".trimIndent()
+        """.trimIndent()
     return packageFileString
 }
 
@@ -360,7 +366,7 @@ internal fun getModifiedPackageFileText(
 
                 appendLine(
                     makePackageDetailsText(packageName, url, checksum, perModuleVariablesBlock)
-                        .prependIndent(indent)
+                        .prependIndent(indent),
                 )
             }
 
@@ -371,10 +377,7 @@ internal fun getModifiedPackageFileText(
     }
 }.removeSuffix("\n")
 
-private fun kmmBridgeVariablesForPackage(
-    packageName: String,
-    perModuleVariablesBlock: Boolean,
-): Pair<String, String> {
+private fun kmmBridgeVariablesForPackage(packageName: String, perModuleVariablesBlock: Boolean): Pair<String, String> {
     if (!perModuleVariablesBlock) {
         return "// BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)" to "// END KMMBRIDGE BLOCK"
     }
@@ -388,8 +391,9 @@ private fun makePackageFileText(
     checksum: String,
     perModuleVariablesBlock: Boolean,
     swiftToolVersion: SwiftToolVersion,
-    platforms: String
-): String = """
+    platforms: String,
+): String =
+    """
 // swift-tools-version:${swiftToolVersion.name}
 import PackageDescription
 
@@ -415,14 +419,9 @@ let package = Package(
         ,
     ]
 )
-""".trimIndent()
+    """.trimIndent()
 
-private fun makePackageDetailsText(
-    packageName: String,
-    url: String,
-    checksum: String,
-    perModuleVariablesBlock: Boolean,
-): String {
+private fun makePackageDetailsText(packageName: String, url: String, checksum: String, perModuleVariablesBlock: Boolean): String {
     val (startTag, endTag) = kmmBridgeVariablesForPackage(packageName, perModuleVariablesBlock)
 
     val remoteUrlVarName = urlVariableName(packageName, perModuleVariablesBlock)
@@ -438,36 +437,30 @@ private fun makePackageDetailsText(
     """.trimIndent()
 }
 
-private fun urlVariableName(packageName: String, perModuleVariablesBlock: Boolean): String =
-    if (perModuleVariablesBlock) {
-        "remote${packageName}Url"
-    } else {
-        "remoteKotlinUrl"
-    }
+private fun urlVariableName(packageName: String, perModuleVariablesBlock: Boolean): String = if (perModuleVariablesBlock) {
+    "remote${packageName}Url"
+} else {
+    "remoteKotlinUrl"
+}
 
-private fun checksumVariableName(packageName: String, perModuleVariablesBlock: Boolean): String =
-    if (perModuleVariablesBlock) {
-        "remote${packageName}Checksum"
-    } else {
-        "remoteKotlinChecksum"
-    }
+private fun checksumVariableName(packageName: String, perModuleVariablesBlock: Boolean): String = if (perModuleVariablesBlock) {
+    "remote${packageName}Checksum"
+} else {
+    "remoteKotlinChecksum"
+}
 
-private fun packageNameVariableName(packageName: String, perModuleVariablesBlock: Boolean): String =
-    if (perModuleVariablesBlock) {
-        "${packageName.replaceFirstChar { it.lowercase(Locale.US) }}PackageName"
-    } else {
-        "packageName"
-    }
+private fun packageNameVariableName(packageName: String, perModuleVariablesBlock: Boolean): String = if (perModuleVariablesBlock) {
+    "${packageName.replaceFirstChar { it.lowercase(Locale.US) }}PackageName"
+} else {
+    "packageName"
+}
 
-private fun buildPackageFileErrorMessage(
-    packageName: String,
-    perModuleVariablesBlock: Boolean,
-): String {
+private fun buildPackageFileErrorMessage(packageName: String, perModuleVariablesBlock: Boolean): String {
     val (beginTag, endTag) = kmmBridgeVariablesForPackage(packageName, perModuleVariablesBlock)
 
     return """
-    KMMBridge: SPM configured with useCustomPackageFile=true, but no custom variable block detected! Add the following lines to your package file to generate variables for binaryTarget() declaration:
-        $beginTag
-        $endTag
+        KMMBridge: SPM configured with useCustomPackageFile=true, but no custom variable block detected! Add the following lines to your package file to generate variables for binaryTarget() declaration:
+            $beginTag
+            $endTag
     """.trimIndent()
 }

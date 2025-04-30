@@ -24,7 +24,7 @@ public class TargetPlatformDsl {
                 TargetName.IOSx64,
                 TargetName.IOSSimulatorArm64,
             ),
-            version
+            version,
         )
     }
 
@@ -43,7 +43,7 @@ public class TargetPlatformDsl {
                 TargetName.macosArm64,
                 TargetName.macosX64,
             ),
-            version
+            version,
         )
     }
 
@@ -63,7 +63,7 @@ public class TargetPlatformDsl {
                 TargetName.tvosArm64,
                 TargetName.tvosSimulatorArm64,
             ),
-            version
+            version,
         )
     }
 
@@ -85,7 +85,7 @@ public class TargetPlatformDsl {
                 TargetName.watchosDeviceArm64,
                 TargetName.watchosSimulatorArm64,
             ),
-            version
+            version,
         )
     }
 
@@ -106,5 +106,4 @@ public class TargetPlatformDsl {
             PlatformVersion.of(versionName)?.let { this.version = it }
         }
     }
-
 }

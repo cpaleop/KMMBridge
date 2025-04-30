@@ -20,6 +20,7 @@ plugins {
     id("java-gradle-plugin")
     alias(libs.plugins.maven.publish)
     id("com.gradle.plugin-publish") version "1.0.0"
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 @Suppress("UnstableApiUsage")
@@ -33,18 +34,19 @@ gradlePlugin {
             id = "co.touchlab.kmmbridge.github"
             implementationClass = "co.touchlab.kmmbridge.github.KMMBridgeGitHubPlugin"
             displayName = "KMMBridge/GitHub"
-            tags = listOf(
-                "kmm",
-                "kotlin",
-                "multiplatform",
-                "mobile",
-                "ios",
-                "xcode",
-                "framework",
-                "binary",
-                "publish",
-                "consume"
-            )
+            tags =
+                listOf(
+                    "kmm",
+                    "kotlin",
+                    "multiplatform",
+                    "mobile",
+                    "ios",
+                    "xcode",
+                    "framework",
+                    "binary",
+                    "publish",
+                    "consume",
+                )
         }
     }
 }

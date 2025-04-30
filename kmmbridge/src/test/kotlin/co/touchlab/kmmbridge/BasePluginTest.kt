@@ -1,11 +1,11 @@
 package co.touchlab.kmmbridge
 
+import java.io.File
+import java.io.FileInputStream
+import java.util.Properties
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.io.FileInputStream
-import java.util.*
 
 abstract class BasePluginTest {
     @TempDir
@@ -15,6 +15,8 @@ abstract class BasePluginTest {
 
     internal lateinit var settingsFile: File
     internal lateinit var buildFile: File
+
+    @Suppress("ktlint:standard:property-naming")
     internal lateinit var TOUCHLAB_TEST_ARTIFACT_CODE: String
 
     abstract fun testProjectPath(): String
@@ -41,10 +43,12 @@ abstract class BasePluginTest {
         println("Params: ${result.params.joinToString(" ")}")
         println("Working dir: ${result.workingDir.absolutePath}")
 
-        if (result.output.isNotEmpty())
+        if (result.output.isNotEmpty()) {
             println(result.output)
-        if (result.error.isNotEmpty())
+        }
+        if (result.error.isNotEmpty()) {
             System.err.println(result.error)
+        }
         println("***********END***********")
     }
 }

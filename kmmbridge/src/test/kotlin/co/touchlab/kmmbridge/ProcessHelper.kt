@@ -7,24 +7,16 @@ import java.io.InputStreamReader
 import java.util.concurrent.atomic.AtomicReference
 
 object ProcessHelper {
-    fun runSh(
-        command: String,
-        envVars: Map<String, String> = emptyMap(),
-        workingDir: File = File(".")
-    ): ExecutionResult {
-        return runParams("/bin/sh", "-c", command, envVars = envVars, workingDir = workingDir)
-    }
+    fun runSh(command: String, envVars: Map<String, String> = emptyMap(), workingDir: File = File(".")): ExecutionResult =
+        runParams("/bin/sh", "-c", command, envVars = envVars, workingDir = workingDir)
 
-    fun runParams(
-        vararg params: String,
-        envVars: Map<String, String> = emptyMap(),
-        workingDir: File = File(".")
-    ): ExecutionResult {
+    fun runParams(vararg params: String, envVars: Map<String, String> = emptyMap(), workingDir: File = File(".")): ExecutionResult {
         val processBuilder = ProcessBuilder(*params)
         processBuilder.environment().putAll(envVars)
         processBuilder.directory(workingDir)
-        val process = processBuilder
-            .start()
+        val process =
+            processBuilder
+                .start()
 
         val stdOut = readProcStream(process.inputStream)
         val errOut = readProcStream(process.errorStream)
@@ -40,19 +32,20 @@ object ProcessHelper {
             workingDir = workingDir,
             status = returnValue,
             output = stdOut.result,
-            error = errOut.result
+            error = errOut.result,
         )
     }
 
     private fun readProcStream(iStream: InputStream): StreamCatcher {
         val atom = AtomicReference<String>("")
-        val t = Thread {
-            val bufferedReader = BufferedReader(InputStreamReader(iStream))
-            val allOut = bufferedReader.readText()
+        val t =
+            Thread {
+                val bufferedReader = BufferedReader(InputStreamReader(iStream))
+                val allOut = bufferedReader.readText()
 
-            bufferedReader.close()
-            atom.set(allOut)
-        }
+                bufferedReader.close()
+                atom.set(allOut)
+            }
 
         t.start()
 
@@ -67,10 +60,4 @@ object ProcessHelper {
     }
 }
 
-data class ExecutionResult(
-    val params: List<String>,
-    val workingDir: File,
-    val status: Int,
-    val output: String,
-    val error: String
-)
+data class ExecutionResult(val params: List<String>, val workingDir: File, val status: Int, val output: String, val error: String)

@@ -1,5 +1,6 @@
 package co.touchlab.kmmbridge.internal.domain
 
+@Suppress("ktlint:standard:enum-entry-name-case")
 internal enum class TargetName(val identifier: String) {
     IOSarm64("iosArm64"),
     IOSx64("iosX64"),
@@ -13,6 +14,5 @@ internal enum class TargetName(val identifier: String) {
     watchosArm32("watchosArm32"),
     watchosArm64("watchosArm64"),
     watchosDeviceArm64("watchosDeviceArm64"),
-    watchosSimulatorArm64("watchosSimulatorArm64")
-    ;
+    watchosSimulatorArm64("watchosSimulatorArm64"),
 }

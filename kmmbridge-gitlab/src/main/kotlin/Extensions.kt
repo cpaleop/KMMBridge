@@ -7,7 +7,6 @@ import org.gradle.api.Project
 import org.gradle.api.credentials.HttpHeaderCredentials
 import org.gradle.authentication.http.HttpHeaderAuthentication
 
-
 /**
  * Helper function to support GitLab Packages publishing.
  * Pass in a valid GitLab token type with GITLAB_PUBLISH_USER. Options include; "Private-Token", "Deploy-Token" & "Job-Token" (default).

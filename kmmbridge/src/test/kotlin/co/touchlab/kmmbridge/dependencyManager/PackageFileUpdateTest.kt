@@ -7,7 +7,8 @@ import kotlin.test.assertEquals
 class PackageFileUpdateTest {
     @Test
     fun realisticUrlUpdate() {
-        val oldFile = """
+        val oldFile =
+            """
             // swift-tools-version:5.3
             import PackageDescription
 
@@ -37,9 +38,10 @@ class PackageFileUpdateTest {
                     ,
                 ]
             )
-        """.trimIndent()
+            """.trimIndent()
 
-        val expectedNewFile = """
+        val expectedNewFile =
+            """
             // swift-tools-version:5.3
             import PackageDescription
 
@@ -69,21 +71,23 @@ class PackageFileUpdateTest {
                     ,
                 ]
             )
-        """.trimIndent()
+            """.trimIndent()
 
-        val newFile = getModifiedPackageFileText(
-            oldFile,
-            "TestPackage",
-            false,
-            "https://www.example.com/",
-            "fedcba9876543210"
-        )
+        val newFile =
+            getModifiedPackageFileText(
+                oldFile,
+                "TestPackage",
+                false,
+                "https://www.example.com/",
+                "fedcba9876543210",
+            )
         assertEquals(expectedNewFile, newFile)
     }
 
     @Test
     fun indentedVariables() {
-        val oldFile = """
+        val oldFile =
+            """
             // For some reason my variables are indented in a strange way
                 // BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)
                   let remoteKotlinUrl = "https://www.example.com/"
@@ -91,9 +95,10 @@ class PackageFileUpdateTest {
                  let packageName = "TestPackage"
                // END KMMBRIDGE BLOCK
             // Fin
-        """.trimIndent()
+            """.trimIndent()
 
-        val expectedNewFile = """
+        val expectedNewFile =
+            """
             // For some reason my variables are indented in a strange way
                 // BEGIN KMMBRIDGE VARIABLES BLOCK (do not edit)
                 let remoteKotlinUrl = "https://www.example.com/"
@@ -101,21 +106,23 @@ class PackageFileUpdateTest {
                 let packageName = "TestPackage"
                 // END KMMBRIDGE BLOCK
             // Fin
-        """.trimIndent()
+            """.trimIndent()
 
-        val newFile = getModifiedPackageFileText(
-            oldFile,
-            "TestPackage",
-            false,
-            "https://www.example.com/",
-            "fedcba9876543210"
-        )
+        val newFile =
+            getModifiedPackageFileText(
+                oldFile,
+                "TestPackage",
+                false,
+                "https://www.example.com/",
+                "fedcba9876543210",
+            )
         assertEquals(expectedNewFile, newFile)
     }
 
     @Test
     fun withMultipleModules() {
-        val oldFile = """
+        val oldFile =
+            """
             // swift-tools-version:5.3
             import PackageDescription
 
@@ -159,9 +166,10 @@ class PackageFileUpdateTest {
                     )
                 ]
             )
-        """.trimIndent()
+            """.trimIndent()
 
-        val expectedNewFile = """
+        val expectedNewFile =
+            """
             // swift-tools-version:5.3
             import PackageDescription
 
@@ -205,15 +213,16 @@ class PackageFileUpdateTest {
                     )
                 ]
             )
-        """.trimIndent()
+            """.trimIndent()
 
-        val newFile = getModifiedPackageFileText(
-            oldFile,
-            "TestPackage",
-            true,
-            "https://www.example.com/",
-            "fedcba9876543210"
-        )
+        val newFile =
+            getModifiedPackageFileText(
+                oldFile,
+                "TestPackage",
+                true,
+                "https://www.example.com/",
+                "fedcba9876543210",
+            )
         assertEquals(expectedNewFile, newFile)
     }
 }

@@ -1,18 +1,20 @@
 package co.touchlab.kmmbridge
 
-import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 class SpmLocalDevTest : BasePluginTest() {
     override fun testProjectPath(): String = "test-projects/basic"
 
     @Test
     fun runSpmDevBuild() {
-        val result = ProcessHelper.runSh(
-            "./gradlew spmDevBuild --stacktrace " +
+        val result =
+            ProcessHelper.runSh(
+                "./gradlew spmDevBuild --stacktrace " +
                     "-PTOUCHLAB_TEST_ARTIFACT_SERVER=api.touchlab.dev " +
-                    "-PTOUCHLAB_TEST_ARTIFACT_CODE=${TOUCHLAB_TEST_ARTIFACT_CODE}", workingDir = testProjectDir
-        )
+                    "-PTOUCHLAB_TEST_ARTIFACT_CODE=${TOUCHLAB_TEST_ARTIFACT_CODE}",
+                workingDir = testProjectDir,
+            )
         logExecResult(result)
         assertEquals(0, result.status)
     }
@@ -23,11 +25,13 @@ class SpmLocalDevTest : BasePluginTest() {
     @Test
     fun runSpmDevBuildNoGit() {
         ProcessHelper.runSh("rm -rdf .git", workingDir = testProjectDir)
-        val result = ProcessHelper.runSh(
-            "./gradlew spmDevBuild --stacktrace " +
+        val result =
+            ProcessHelper.runSh(
+                "./gradlew spmDevBuild --stacktrace " +
                     "-PTOUCHLAB_TEST_ARTIFACT_SERVER=api.touchlab.dev " +
-                    "-PTOUCHLAB_TEST_ARTIFACT_CODE=${TOUCHLAB_TEST_ARTIFACT_CODE}", workingDir = testProjectDir
-        )
+                    "-PTOUCHLAB_TEST_ARTIFACT_CODE=${TOUCHLAB_TEST_ARTIFACT_CODE}",
+                workingDir = testProjectDir,
+            )
         logExecResult(result)
         assertEquals(0, result.status)
     }
