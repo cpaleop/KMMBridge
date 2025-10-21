@@ -6,15 +6,15 @@ import co.touchlab.kmmbridge.artifactmanager.MavenPublishArtifactManager
 import co.touchlab.kmmbridge.dependencymanager.CocoapodsDependencyManager
 import co.touchlab.kmmbridge.dependencymanager.DependencyManager
 import co.touchlab.kmmbridge.dependencymanager.SpmDependencyManager
-import org.gradle.api.Project
-import org.gradle.api.provider.Property
-import org.gradle.testfixtures.ProjectBuilder
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.gradle.api.Project
+import org.gradle.api.provider.Property
+import org.gradle.testfixtures.ProjectBuilder
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 class KmmBridgeExtensionTest {
     private lateinit var project: Project
@@ -33,7 +33,7 @@ class KmmBridgeExtensionTest {
                 region = "us-east-1",
                 bucket = "test-bucket",
                 accessKeyId = "test-key",
-                secretAccessKey = "test-secret"
+                secretAccessKey = "test-secret",
             )
         }
 
@@ -47,7 +47,7 @@ class KmmBridgeExtensionTest {
             project.mavenPublishArtifacts(
                 repository = "test-repo",
                 publication = "test-pub",
-                isMavenCentral = true
+                isMavenCentral = true,
             )
         }
 
@@ -60,7 +60,7 @@ class KmmBridgeExtensionTest {
         extension.apply {
             project.spm(
                 spmDirectory = "test-dir",
-                useCustomPackageFile = true
+                useCustomPackageFile = true,
             )
         }
 
@@ -74,7 +74,7 @@ class KmmBridgeExtensionTest {
         extension.apply {
             project.cocoapodsTrunk(
                 allowWarnings = true,
-                verboseErrors = true
+                verboseErrors = true,
             )
         }
 

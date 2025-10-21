@@ -14,6 +14,8 @@
 package co.touchlab.kmmbridge.artifactmanager
 
 import co.touchlab.kmmbridge.internal.kmmBridgeExtension
+import java.io.File
+import java.util.UUID
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
@@ -24,8 +26,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import java.io.File
-import java.util.*
 
 internal class AwsS3PublicArtifactManager(
     private val s3Region: String,
@@ -35,15 +35,9 @@ internal class AwsS3PublicArtifactManager(
     private val makeArtifactsPublic: Boolean,
     private val altBaseUrl: String?,
 ) : ArtifactManager {
-
     lateinit var frameworkName: String
 
-    override fun configure(
-        project: Project,
-        version: String,
-        uploadTask: TaskProvider<Task>,
-        kmmPublishTask: TaskProvider<Task>
-    ) {
+    override fun configure(project: Project, version: String, uploadTask: TaskProvider<Task>, kmmPublishTask: TaskProvider<Task>) {
         frameworkName = project.kmmBridgeExtension.frameworkName.get()
     }
 
@@ -59,8 +53,8 @@ internal class AwsS3PublicArtifactManager(
      * @see uploadArtifact
      */
     private fun deployUrl(zipFileName: String): String {
-        val baseUrl = altBaseUrl ?: "https://${s3Bucket}.s3.${s3Region}.amazonaws.com"
-        return "${baseUrl}/$zipFileName"
+        val baseUrl = altBaseUrl ?: "https://$s3Bucket.s3.$s3Region.amazonaws.com"
+        return "$baseUrl/$zipFileName"
     }
 
     /**
@@ -70,37 +64,44 @@ internal class AwsS3PublicArtifactManager(
      */
     @Suppress("NAME_SHADOWING")
     private fun uploadArtifact(zipFilePath: File, fileName: String) {
-        val s3Client = S3Client.builder()
-            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .region(Region.of(s3Region))
-            .credentialsProvider {
-                AwsBasicCredentials.create(
-                    s3AccessKeyId,
-                    s3SecretAccessKey
-                )
-            }
-            .build()
+        val s3Client =
+            S3Client
+                .builder()
+                .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                .region(Region.of(s3Region))
+                .credentialsProvider {
+                    AwsBasicCredentials.create(
+                        s3AccessKeyId,
+                        s3SecretAccessKey,
+                    )
+                }.build()
 
         s3Client.use { s3Client ->
 
-            val headObjectRequest = HeadObjectRequest.builder()
-                .bucket(s3Bucket)
-                .key(fileName)
-                .build()
-
-            val exists = try {
-                s3Client.headObject(headObjectRequest).sdkHttpResponse().isSuccessful
-            } catch (e: Exception) {
-                false
-            }
-
-            if (!exists) {
-                val builder = PutObjectRequest.builder()
+            val headObjectRequest =
+                HeadObjectRequest
+                    .builder()
                     .bucket(s3Bucket)
                     .key(fileName)
+                    .build()
 
-                if (makeArtifactsPublic)
+            val exists =
+                try {
+                    s3Client.headObject(headObjectRequest).sdkHttpResponse().isSuccessful
+                } catch (e: Exception) {
+                    false
+                }
+
+            if (!exists) {
+                val builder =
+                    PutObjectRequest
+                        .builder()
+                        .bucket(s3Bucket)
+                        .key(fileName)
+
+                if (makeArtifactsPublic) {
                     builder.acl("public-read")
+                }
 
                 val putObjectRequest = builder.build()
 
@@ -116,5 +117,5 @@ internal class AwsS3PublicArtifactManager(
  */
 private fun obscureFileName(frameworkName: String, versionString: String): String {
     val randomId = UUID.randomUUID().toString()
-    return "${frameworkName}-${versionString}-${randomId}.xcframework.zip"
+    return "$frameworkName-$versionString-$randomId.xcframework.zip"
 }

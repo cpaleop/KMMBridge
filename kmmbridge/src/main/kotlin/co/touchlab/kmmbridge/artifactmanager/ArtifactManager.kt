@@ -13,25 +13,19 @@
 
 package co.touchlab.kmmbridge.artifactmanager
 
+import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskProvider
-import java.io.File
 
 /**
  * Publishes XCFramework zip files to where they are hosted in the cloud.
  */
 interface ArtifactManager {
-
     /**
      * Run during Gradle project config.
      */
-    fun configure(
-        project: Project,
-        version: String,
-        uploadTask: TaskProvider<Task>,
-        kmmPublishTask: TaskProvider<Task>
-    ) {
+    fun configure(project: Project, version: String, uploadTask: TaskProvider<Task>, kmmPublishTask: TaskProvider<Task>) {
     }
 
     /**

@@ -5,27 +5,21 @@ import co.touchlab.kmmbridge.github.internal.githubPublishUser
 import co.touchlab.kmmbridge.github.internal.githubRepoOrNull
 import co.touchlab.kmmbridge.github.kmmBridgeExtension
 import co.touchlab.kmmbridge.publishingExtension
-import org.gradle.api.Project
 import java.net.URI
+import org.gradle.api.Project
 
 @Suppress("unused")
-fun Project.gitHubReleaseArtifacts(
-    repository: String? = null,
-    releasString: String? = null,
-    useExistingRelease: Boolean = false
-) {
+fun Project.gitHubReleaseArtifacts(repository: String? = null, releasString: String? = null, useExistingRelease: Boolean = false) {
     kmmBridgeExtension.setupGitHubReleaseArtifacts(
         GithubReleaseArtifactManager(
             repository,
             releasString,
-            useExistingRelease
-        )
+            useExistingRelease,
+        ),
     )
 }
 
-private fun KmmBridgeExtension.setupGitHubReleaseArtifacts(
-    githubReleaseArtifactManager: GithubReleaseArtifactManager
-) {
+private fun KmmBridgeExtension.setupGitHubReleaseArtifacts(githubReleaseArtifactManager: GithubReleaseArtifactManager) {
     artifactManager.setAndFinalize(githubReleaseArtifactManager)
 }
 

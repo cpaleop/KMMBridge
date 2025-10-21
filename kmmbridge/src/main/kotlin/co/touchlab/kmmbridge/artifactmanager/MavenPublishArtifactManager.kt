@@ -2,6 +2,7 @@ package co.touchlab.kmmbridge.artifactmanager
 
 import co.touchlab.kmmbridge.internal.capitalized
 import co.touchlab.kmmbridge.publishingExtension
+import java.io.File
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -12,7 +13,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.kotlin.dsl.getByType
-import java.io.File
 
 private const val FRAMEWORK_PUBLICATION_NAME = "KMMBridgeFramework"
 private const val KMMBRIDGE_ARTIFACT_SUFFIX = "kmmbridge"
@@ -27,24 +27,20 @@ internal class MavenPublishArtifactManager(
     lateinit var kmmbridgeArtifactId: String
     lateinit var mavenArtifactRepositoryUrl: String
 
-    override fun configure(
-        project: Project,
-        version: String,
-        uploadTask: TaskProvider<Task>,
-        kmmPublishTask: TaskProvider<Task>
-    ) {
+    override fun configure(project: Project, version: String, uploadTask: TaskProvider<Task>, kmmPublishTask: TaskProvider<Task>) {
         this.group = project.group.toString().replace(".", "/")
         this.kmmbridgeArtifactId = "${project.name}-${artifactSuffix ?: KMMBRIDGE_ARTIFACT_SUFFIX}"
         this.mavenArtifactRepositoryUrl = project.evaluateRepoUrl()
 
         project.publishingExtension.publications.create(
             publicationName ?: FRAMEWORK_PUBLICATION_NAME,
-            MavenPublication::class.java
+            MavenPublication::class.java,
         ) {
             this.version = version
-            val archiveProvider = project.tasks.named("zipXCFramework", Zip::class.java).flatMap {
-                it.archiveFile
-            }
+            val archiveProvider =
+                project.tasks.named("zipXCFramework", Zip::class.java).flatMap {
+                    it.archiveFile
+                }
             artifact(archiveProvider) {
                 extension = "zip"
             }
@@ -74,9 +70,7 @@ internal class MavenPublishArtifactManager(
      * doesn't tell you anything about the remote URLs that it's creating, it's inferred based on
      * maven's well known conventions.
      */
-    override fun deployArtifact(task: Task, zipFilePath: File, version: String): String {
-        return artifactPath(mavenArtifactRepositoryUrl, version)
-    }
+    override fun deployArtifact(task: Task, zipFilePath: File, version: String): String = artifactPath(mavenArtifactRepositoryUrl, version)
 
     private fun Project.evaluateRepoUrl(): String {
         val publishingExtension = project.extensions.getByType<PublishingExtension>()
@@ -96,7 +90,10 @@ internal class MavenPublishArtifactManager(
 
         // Either the user has supplied a correct name, or we use the default. If neither is found, fail.
         val publicationNameCap =
-            publishingExtension.publications.getByName(publicationName ?: FRAMEWORK_PUBLICATION_NAME).name.capitalized()
+            publishingExtension.publications
+                .getByName(publicationName ?: FRAMEWORK_PUBLICATION_NAME)
+                .name
+                .capitalized()
 
         return publishingExtension.repositories.filterIsInstance<MavenArtifactRepository>().map { repo ->
             val repositoryName = repo.name.capitalized()
@@ -106,25 +103,23 @@ internal class MavenPublishArtifactManager(
         }
     }
 
-    private fun findArtifactRepository(publishingExtension: PublishingExtension): MavenArtifactRepository =
-        repositoryName?.let {
-            publishingExtension.repositories.findByName(it) as MavenArtifactRepository
-        } ?: publishingExtension.repositories.filterIsInstance<MavenArtifactRepository>().firstOrNull()
+    private fun findArtifactRepository(publishingExtension: PublishingExtension): MavenArtifactRepository = repositoryName?.let {
+        publishingExtension.repositories.findByName(it) as MavenArtifactRepository
+    } ?: publishingExtension.repositories.filterIsInstance<MavenArtifactRepository>().firstOrNull()
         ?: throw GradleException(
             "Artifact repository not found, please, specify maven repository\n" +
-                    "publishing {\n" +
-                    "    repositories {\n" +
-                    "        maven {\n" +
-                    "            url = uri(\"https://someservice/path/to/repo\")\n" +
-                    "            credentials {\n" +
-                    "                username = publishUsername\n" +
-                    "                password = publishPassword\n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}"
+                "publishing {\n" +
+                "    repositories {\n" +
+                "        maven {\n" +
+                "            url = uri(\"https://someservice/path/to/repo\")\n" +
+                "            credentials {\n" +
+                "                username = publishUsername\n" +
+                "                password = publishPassword\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}",
         )
 
-    private fun artifactPath(url: String, version: String) =
-        "$url/$group/$kmmbridgeArtifactId/$version/$kmmbridgeArtifactId-$version.zip"
+    private fun artifactPath(url: String, version: String) = "$url/$group/$kmmbridgeArtifactId/$version/$kmmbridgeArtifactId-$version.zip"
 }

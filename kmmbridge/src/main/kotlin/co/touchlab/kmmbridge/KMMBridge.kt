@@ -22,6 +22,10 @@ import co.touchlab.kmmbridge.internal.layoutBuildDir
 import co.touchlab.kmmbridge.internal.spmBuildTargets
 import co.touchlab.kmmbridge.internal.urlFile
 import co.touchlab.kmmbridge.internal.zipFilePath
+import java.io.File
+import kotlin.collections.filter
+import kotlin.collections.flatMap
+import kotlin.collections.forEach
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -37,27 +41,22 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFrameworkConfig
-import java.io.File
-import kotlin.collections.filter
-import kotlin.collections.flatMap
-import kotlin.collections.forEach
 
 @Suppress("unused")
-open class KMMBridgePlugin : BaseKMMBridgePlugin() {
-}
+open class KMMBridgePlugin : BaseKMMBridgePlugin()
 
 abstract class BaseKMMBridgePlugin : Plugin<Project> {
-
     override fun apply(project: Project): Unit = with(project) {
         val extension = extensions.create<KmmBridgeExtension>(EXTENSION_NAME)
 
         extension.dependencyManagers.convention(emptyList())
 
-        val defaultNativeBuildType = if (project.findStringProperty("NATIVE_BUILD_TYPE") == "DEBUG") {
-            NativeBuildType.DEBUG
-        } else {
-            NativeBuildType.RELEASE
-        }
+        val defaultNativeBuildType =
+            if (project.findStringProperty("NATIVE_BUILD_TYPE") == "DEBUG") {
+                NativeBuildType.DEBUG
+            } else {
+                NativeBuildType.RELEASE
+            }
 
         extension.buildType.convention(defaultNativeBuildType)
 
@@ -77,7 +76,11 @@ abstract class BaseKMMBridgePlugin : Plugin<Project> {
         var xcFrameworkConfig: XCFrameworkConfig? = null
 
         val spmBuildTargets: Set<String> =
-            project.spmBuildTargets?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet() ?: emptySet()
+            project.spmBuildTargets
+                ?.split(",")
+                ?.map { it.trim() }
+                ?.filter { it.isNotEmpty() }
+                ?.toSet() ?: emptySet()
 
         kotlin.targets
             .withType<KotlinNativeTarget>()
@@ -105,18 +108,24 @@ abstract class BaseKMMBridgePlugin : Plugin<Project> {
     }
 
     private fun Project.configureLocalDev(kmmBridgeExtension: KmmBridgeExtension) {
-        (kmmBridgeExtension.dependencyManagers.get()
-            .find { it is SpmDependencyManager } as? SpmDependencyManager)?.configureLocalDev(
-            this
+        (
+            kmmBridgeExtension.dependencyManagers
+                .get()
+                .find { it is SpmDependencyManager } as? SpmDependencyManager
+            )?.configureLocalDev(
+            this,
         )
     }
 
     private fun Project.configureArtifactManagerAndDeploy(kmmBridgeExtension: KmmBridgeExtension) {
         // Early-out with a warning if user hasn't added required config yet, to ensure project still syncs
-        val artifactManager = kmmBridgeExtension.artifactManager.orNull ?: run {
-            project.logger.warn("You must apply an artifact manager! Call `artifactManager.set(...)` or a configuration function like `mavenPublishArtifacts()` in your `kmmbridge` block.")
-            return
-        }
+        val artifactManager =
+            kmmBridgeExtension.artifactManager.orNull ?: run {
+                project.logger.warn(
+                    "You must apply an artifact manager! Call `artifactManager.set(...)` or a configuration function like `mavenPublishArtifacts()` in your `kmmbridge` block.",
+                )
+                return
+            }
 
         val (zipTask, zipFile) = configureZipTask(kmmBridgeExtension, project.layoutBuildDir)
 
@@ -131,11 +140,12 @@ abstract class BaseKMMBridgePlugin : Plugin<Project> {
         val dependencyManagers = kmmBridgeExtension.dependencyManagers.get()
 
         // Publish task depends on the upload task
-        val publishRemoteTask = tasks.register("kmmBridgePublish") {
-            description = "Publishes your framework. Uses your KMMBridge block configured in the build gradle to determine details."
-            group = TASK_GROUP_NAME
-            dependsOn(uploadTask)
-        }
+        val publishRemoteTask =
+            tasks.register("kmmBridgePublish") {
+                description = "Publishes your framework. Uses your KMMBridge block configured in the build gradle to determine details."
+                group = TASK_GROUP_NAME
+                dependsOn(uploadTask)
+            }
 
         // MavenPublishArtifactManager is somewhat complex because we have to hook into maven publishing
         // If you are exploring the task dependencies, be aware of that code
@@ -146,41 +156,38 @@ abstract class BaseKMMBridgePlugin : Plugin<Project> {
         }
     }
 
-    private fun Project.configureUploadTask(
-        zipTask: TaskProvider<Zip>,
-        zipFile: File,
-        artifactManager: ArtifactManager
-    ) = tasks.register("uploadXCFramework") {
-        group = TASK_GROUP_NAME
-
-        dependsOn(zipTask)
-        inputs.file(zipFile)
-        outputs.files(urlFile)
-        outputs.upToDateWhen { false } // We want to always upload when this task is called
-        val versionLocal = version
-        val urlFileLocal = urlFile
-
-        @Suppress("ObjectLiteralToLambda")
-        doLast(object : Action<Task> {
-            override fun execute(t: Task) {
-                logger.info("Uploading XCFramework version $versionLocal")
-                val deployUrl = artifactManager.deployArtifact(this@register, zipFile, versionLocal.toString())
-                urlFileLocal.writeText(deployUrl)
-            }
-        })
-    }
-
-    private fun Project.configureZipTask(
-        kmmBridgeExtension: KmmBridgeExtension,
-        buildDir: File
-    ): Pair<TaskProvider<Zip>, File> {
-        val zipFile = zipFilePath()
-        val zipTask = tasks.register<Zip>("zipXCFramework") {
+    private fun Project.configureUploadTask(zipTask: TaskProvider<Zip>, zipFile: File, artifactManager: ArtifactManager) =
+        tasks.register("uploadXCFramework") {
             group = TASK_GROUP_NAME
-            from("$buildDir/XCFrameworks/${kmmBridgeExtension.buildType.get().getName()}")
-            destinationDirectory.set(zipFile.parentFile)
-            archiveFileName.set(zipFile.name)
+
+            dependsOn(zipTask)
+            inputs.file(zipFile)
+            outputs.files(urlFile)
+            outputs.upToDateWhen { false } // We want to always upload when this task is called
+            val versionLocal = version
+            val urlFileLocal = urlFile
+
+            @Suppress("ObjectLiteralToLambda")
+            doLast(
+                object : Action<Task> {
+                    override fun execute(t: Task) {
+                        logger.info("Uploading XCFramework version $versionLocal")
+                        val deployUrl = artifactManager.deployArtifact(this@register, zipFile, versionLocal.toString())
+                        urlFileLocal.writeText(deployUrl)
+                    }
+                },
+            )
         }
+
+    private fun Project.configureZipTask(kmmBridgeExtension: KmmBridgeExtension, buildDir: File): Pair<TaskProvider<Zip>, File> {
+        val zipFile = zipFilePath()
+        val zipTask =
+            tasks.register<Zip>("zipXCFramework") {
+                group = TASK_GROUP_NAME
+                from("$buildDir/XCFrameworks/${kmmBridgeExtension.buildType.get().getName()}")
+                destinationDirectory.set(zipFile.parentFile)
+                archiveFileName.set(zipFile.name)
+            }
 
         return Pair(zipTask, zipFile)
     }

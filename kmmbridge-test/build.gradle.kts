@@ -12,6 +12,7 @@
 * or implied. See the License for the specific language governing permissions and limitations under
 * the License.
 */
+
 plugins {
     `kotlin-dsl`
     alias(libs.plugins.kotlin)
@@ -32,18 +33,19 @@ gradlePlugin {
             id = "co.touchlab.kmmbridge.test"
             implementationClass = "co.touchlab.kmmbridge.test.KMMBridgeTestPlugin"
             displayName = "KMMBridge/Test"
-            tags = listOf(
-                "kmm",
-                "kotlin",
-                "multiplatform",
-                "mobile",
-                "ios",
-                "xcode",
-                "framework",
-                "binary",
-                "publish",
-                "consume"
-            )
+            tags =
+                listOf(
+                    "kmm",
+                    "kotlin",
+                    "multiplatform",
+                    "mobile",
+                    "ios",
+                    "xcode",
+                    "framework",
+                    "binary",
+                    "publish",
+                    "consume",
+                )
         }
     }
 }

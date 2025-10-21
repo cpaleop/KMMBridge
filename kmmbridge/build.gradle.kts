@@ -33,18 +33,19 @@ gradlePlugin {
             id = "co.touchlab.kmmbridge"
             implementationClass = "co.touchlab.kmmbridge.KMMBridgePlugin"
             displayName = "KMMBridge for Teams"
-            tags = listOf(
-                "kmm",
-                "kotlin",
-                "multiplatform",
-                "mobile",
-                "ios",
-                "xcode",
-                "framework",
-                "binary",
-                "publish",
-                "consume"
-            )
+            tags =
+                listOf(
+                    "kmm",
+                    "kotlin",
+                    "multiplatform",
+                    "mobile",
+                    "ios",
+                    "xcode",
+                    "framework",
+                    "binary",
+                    "publish",
+                    "consume",
+                )
         }
     }
 }

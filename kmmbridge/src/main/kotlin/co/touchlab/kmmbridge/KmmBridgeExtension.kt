@@ -58,8 +58,8 @@ interface KmmBridgeExtension {
                 accessKeyId,
                 secretAccessKey,
                 makeArtifactsPublic,
-                altBaseUrl
-            )
+                altBaseUrl,
+            ),
         )
     }
 
@@ -72,15 +72,15 @@ interface KmmBridgeExtension {
         repository: String? = null,
         publication: String? = null,
         artifactSuffix: String? = null,
-        isMavenCentral: Boolean = false
+        isMavenCentral: Boolean = false,
     ) {
         artifactManager.setAndFinalize(
             MavenPublishArtifactManager(
                 publication,
                 artifactSuffix,
                 repository,
-                isMavenCentral
-            )
+                isMavenCentral,
+            ),
         )
     }
 
@@ -100,13 +100,14 @@ interface KmmBridgeExtension {
         swiftToolVersion: String = SwiftToolVersion.Default,
         targetPlatforms: TargetPlatformDsl.() -> Unit = { iOS { v("13") } },
     ) {
-        val dependencyManager = SpmDependencyManager(
-            spmDirectory,
-            useCustomPackageFile,
-            perModuleVariablesBlock,
-            swiftToolVersion,
-            targetPlatforms
-        )
+        val dependencyManager =
+            SpmDependencyManager(
+                spmDirectory,
+                useCustomPackageFile,
+                perModuleVariablesBlock,
+                swiftToolVersion,
+                targetPlatforms,
+            )
         dependencyManagers.set(dependencyManagers.getOrElse(emptyList()) + dependencyManager)
     }
 
@@ -118,16 +119,13 @@ interface KmmBridgeExtension {
      * @param verboseErrors Output extra error info. Generally used if publishing fails. Defaults to false.
      */
     @Suppress("unused")
-    fun Project.cocoapods(
-        specRepoUrl: String,
-        allowWarnings: Boolean = true,
-        verboseErrors: Boolean = false,
-    ) {
+    fun Project.cocoapods(specRepoUrl: String, allowWarnings: Boolean = true, verboseErrors: Boolean = false) {
         kotlin.cocoapods // This will throw error if we didn't apply cocoapods plugin
 
-        val dependencyManager = CocoapodsDependencyManager({
-            SpecRepo.Private(specRepoUrl)
-        }, allowWarnings, verboseErrors)
+        val dependencyManager =
+            CocoapodsDependencyManager({
+                SpecRepo.Private(specRepoUrl)
+            }, allowWarnings, verboseErrors)
 
         dependencyManagers.set(dependencyManagers.getOrElse(emptyList()) + dependencyManager)
     }
@@ -139,10 +137,7 @@ interface KmmBridgeExtension {
      * @param verboseErrors Output extra error info. Generally used if publishing fails. Defaults to false.
      */
     @Suppress("unused")
-    fun Project.cocoapodsTrunk(
-        allowWarnings: Boolean = true,
-        verboseErrors: Boolean = false,
-    ) {
+    fun Project.cocoapodsTrunk(allowWarnings: Boolean = true, verboseErrors: Boolean = false) {
         kotlin.cocoapods // This will throw error if we didn't apply cocoapods plugin
 
         val dependencyManager = CocoapodsDependencyManager({ SpecRepo.Trunk }, allowWarnings, verboseErrors)

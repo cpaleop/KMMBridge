@@ -14,9 +14,11 @@ plugins {
     alias(libs.plugins.kotlin) apply false
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.0" apply false
     alias(libs.plugins.maven.publish) apply false
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0" apply false
 }
 
 subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -24,6 +26,14 @@ subprojects {
 
     extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension>()?.apply {
         jvmToolchain(17)
+    }
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set("1.4.0")
+        enableExperimentalRules.set(true)
+        verbose.set(true)
+        filter {
+            exclude { it.file.path.contains("build/") }
+        }
     }
 
     val GROUP: String by project
@@ -35,6 +45,9 @@ subprojects {
     afterEvaluate {
         tasks.getByName<Test>("test") {
             useJUnitPlatform()
+        }
+        tasks.named("check") {
+            dependsOn(tasks.getByName("ktlintCheck"))
         }
     }
 }

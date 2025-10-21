@@ -33,18 +33,19 @@ gradlePlugin {
             id = "co.touchlab.kmmbridge.gitlab"
             implementationClass = "co.touchlab.kmmbridge.gitlab.KMMBridgeGitLabPlugin"
             displayName = "KMMBridge/GitLab"
-            tags = listOf(
-                "kmm",
-                "kotlin",
-                "multiplatform",
-                "mobile",
-                "ios",
-                "xcode",
-                "framework",
-                "binary",
-                "publish",
-                "consume"
-            )
+            tags =
+                listOf(
+                    "kmm",
+                    "kotlin",
+                    "multiplatform",
+                    "mobile",
+                    "ios",
+                    "xcode",
+                    "framework",
+                    "binary",
+                    "publish",
+                    "consume",
+                )
         }
     }
 }
